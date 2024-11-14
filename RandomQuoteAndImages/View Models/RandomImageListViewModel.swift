@@ -15,10 +15,20 @@ class RandomImageListViewModel: ObservableObject {
     
     let webService = WebService()
     func getRandomImages(ids: [Int]) async {
+        randomImages = []
         do{
-            let randomImages: [RandomImage] = try await webService.getRandomImages(ids: ids)
-            // published properties should be set in main thread -> use @MainActor
-            self.randomImages = randomImages.map(RandomImageViewModel.init)
+            try await withThrowingTaskGroup(of: (Int, RandomImage).self) { group in
+                for id in ids {
+                    group.addTask {
+                        return (id, try await self.webService.getRandomImage(id: id))
+                    }
+                }
+                
+                for try await (_, randomImage) in group {
+                    randomImages.append(RandomImageViewModel(randomImage: randomImage))
+                }
+            }
+            
         }catch {
             print("Error: \(error)")
         }
