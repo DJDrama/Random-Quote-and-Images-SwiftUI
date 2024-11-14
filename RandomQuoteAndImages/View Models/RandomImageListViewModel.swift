@@ -20,7 +20,7 @@ class RandomImageListViewModel: ObservableObject {
             // published properties should be set in main thread -> use @MainActor
             self.randomImages = randomImages.map(RandomImageViewModel.init)
         }catch {
-            print(error)
+            print("Error: \(error)")
         }
     }
 }
